@@ -2,15 +2,16 @@ package dannypx.foe.handler.fetch;
 
 import dannypx.foe.handler.Handler;
 import dannypx.foe.handler.logic.CodeExecuterHandler;
+import dannypx.foe.handler.logic.EventHandler;
 import dannypx.foe.handler.renderer.*;
 import dannypx.foe.type.tuple.Pair;
 import dannypx.foe.config.Configs;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -43,6 +44,7 @@ public class GenericContainerScreenHandler extends Handler {
     public static final String STORAGE_SCREEN_CONTAINER = " ";
     public static final String GENERIC_SCREEN_CONTAINER = "\uEEE4\uD552";
     public static final String PRESETS_SCREEN_CONTAINER = "Presets\uEEE6\uEEE5\uD572";
+    public static final String TACKLE_BOX_SCREEN_CONTAINER = "Tacklebox\uEEE6\uEEE5\uEEE4\uEEE2핖";
     //endregion
 
     //region Methods
@@ -81,6 +83,13 @@ public class GenericContainerScreenHandler extends Handler {
             ScreenMouseEvents.afterMouseScroll(genericContainerScreen).register(PersonalVaultScreenRenderHandler.instance()::checkMouseScroll);
             ScreenMouseEvents.afterMouseClick(genericContainerScreen).register(PersonalVaultScreenRenderHandler.instance()::checkMouseClick);
             ScreenEvents.remove(genericContainerScreen).register(PersonalVaultScreenRenderHandler.instance()::onClose);
+        }
+
+        // Tackle Box Screen
+        else if(genericContainerScreen.getTitle().getString().startsWith(TACKLE_BOX_SCREEN_CONTAINER)) {
+            TackleBoxScreenRenderHandler.instance().init(genericContainerScreen);
+            ScreenMouseEvents.afterMouseClick(genericContainerScreen).register(TackleBoxScreenRenderHandler.instance()::checkMouseClick);
+            ScreenEvents.remove(genericContainerScreen).register(TackleBoxScreenRenderHandler.instance()::onClose);
         }
 
         // Any Container Screen
@@ -127,19 +136,22 @@ public class GenericContainerScreenHandler extends Handler {
         );
     }
 
-    public void extractRenderState(Screen screen, GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float tickDelta) {
+    public void render(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float tickDelta) {
         if(screen instanceof ContainerScreen genericContainerScreen) {
             if (Objects.equals(genericContainerScreen.getTitle().getString(), AUCTION_HOUSE_SCREEN_CONTAINER)) {
-                AuctionHouseScreenRenderHandler.instance().extractRenderButtonHelp(guiGraphicsExtractor, true, true);
-                AuctionHouseScreenRenderHandler.instance().extractRenderState(screen, guiGraphicsExtractor, mouseX, mouseY, tickDelta);
+                AuctionHouseScreenRenderHandler.instance().renderButtonHelp(guiGraphics, true, true);
+                AuctionHouseScreenRenderHandler.instance().render(screen, guiGraphics, mouseX, mouseY, tickDelta);
             } else if (genericContainerScreen.getTitle().getString().startsWith(PERSONAL_VAULT_SCREEN_CONTAINER)) {
-                PersonalVaultScreenRenderHandler.instance().extractRenderButtonHelp(guiGraphicsExtractor, true, true);
-                PersonalVaultScreenRenderHandler.instance().extractRenderState(screen, guiGraphicsExtractor, mouseX, mouseY, tickDelta);
+                PersonalVaultScreenRenderHandler.instance().renderButtonHelp(guiGraphics, true, true);
+                PersonalVaultScreenRenderHandler.instance().render(screen, guiGraphics, mouseX, mouseY, tickDelta);
             } else if (Objects.equals(genericContainerScreen.getTitle().getString(), STORAGE_SCREEN_CONTAINER)) {
-                ChestScreenRenderHandler.instance().extractRenderButtonHelp(guiGraphicsExtractor, true, false);
-                ChestScreenRenderHandler.instance().extractRenderState(screen, guiGraphicsExtractor, mouseX, mouseY, tickDelta);
+                ChestScreenRenderHandler.instance().renderButtonHelp(guiGraphics, true, false);
+                ChestScreenRenderHandler.instance().render(screen, guiGraphics, mouseX, mouseY, tickDelta);
             } else if (Objects.equals(genericContainerScreen.getTitle().getString(), PRESETS_SCREEN_CONTAINER)) {
-                PresetsScreenRenderHandler.instance().extractRenderButtonHelp(guiGraphicsExtractor, true, true);
+                PresetsScreenRenderHandler.instance().renderButtonHelp(guiGraphics, true, true);
+            } else if(Objects.equals(genericContainerScreen.getTitle().getString(), TACKLE_BOX_SCREEN_CONTAINER)) {
+                TackleBoxScreenRenderHandler.instance().renderButtonHelp(guiGraphics, true, false);
+                TackleBoxScreenRenderHandler.instance().render(screen, guiGraphics, mouseX, mouseY, tickDelta);
             }
         }
     }

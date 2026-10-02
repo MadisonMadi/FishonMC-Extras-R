@@ -7,6 +7,7 @@ import dannypx.foe.FishOnMCExtras;
 import dannypx.foe.handler.logic.LoggerHandler;
 import dannypx.foe.handler.store.CustomChatNotificationDataHandler;
 import dannypx.foe.helper.TextHelper;
+import dannypx.foe.placeholder.editbox.PlaceholderEditBox;
 import dannypx.foe.screens.interfaces.ScreenConstants;
 import dannypx.foe.screens.widget.ButtonListWidget;
 import dannypx.foe.type.tuple.Triplet;
@@ -15,9 +16,11 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import org.jetbrains.annotations.NotNull;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -36,7 +39,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
     private EditBox nameEditBox;
 
     private final int sideWidth = 100;
-    private EditBox stringEditBox;
+    private PlaceholderEditBox stringEditBox;
     private String stringField;
     //endregion
 
@@ -112,6 +115,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
         List<AbstractWidget> widgets = new ArrayList<>();
 
         widgets.add(this.saveBackButton());
+        widgets.add(this.saveButton());
         widgets.add(this.backButton());
 
         widgets.add(getButtonList());
@@ -148,7 +152,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
     }
 
     private AbstractWidget getStringEditBox() {
-        stringEditBox = new EditBox(
+        stringEditBox = new PlaceholderEditBox(
                 font,
                 (BUTTON_WIDTH + PADDING * 2) + PADDING + sideWidth,
                 PADDING + (widgetHeight + PADDING) * 2,
@@ -268,7 +272,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
                                 try {
                                     Triplet<String, String, Integer> dataButton = Triplet.of(
                                             selectedChatNotificationId,
-                                            selectedChatNotificationId,
+                                            stringEditBox.getValue(),
                                             FishOnMCExtras.CHAT_NOTIFICATION_VERSION
                                     );
 
@@ -280,7 +284,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
                                             "```\n" +
                                             rawData + "\n" +
                                             "```\n" +
-                                            "-# Using Chat Trigger version: " + "`v" + FishOnMCExtras.CHAT_NOTIFICATION_VERSION + "`";
+                                            "-# Using Chat Notification version: " + "`v" + FishOnMCExtras.CHAT_NOTIFICATION_VERSION + "`";
 
                                     this.minecraft.keyboardHandler.setClipboard(dataToCopy);
 
@@ -312,7 +316,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
                 0,
                 BUTTON_HEIGHT + PADDING_HALF,
                 BUTTON_HEIGHT,
-                "Custom Chat Triggers"
+                "Custom Chat Notification"
         );
 
         CustomChatNotificationDataHandler.instance().getCustomChatNotificationData().notificationList.forEach((name, text) -> {
@@ -327,42 +331,76 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
 
     private Button saveBackButton() {
         return Button.builder(Component.literal("Save and Return"), button -> {
-            if(selectedChatNotificationId != null) {
-                if(nameEditBox.getValue().isBlank()) {
-                    SystemToast.add(this.minecraft.getToastManager(),
-                            SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
-                            Component.literal("Fish On Extras Rebirth"),
-                            Component.literal("Chat Notification name is empty"));
-
-                    return;
-                }
-
-                if(!Objects.equals(selectedChatNotificationId, nameEditBox.getValue())
-                        && CustomChatNotificationDataHandler.instance().getCustomChatNotificationData().notificationList.containsKey(nameEditBox.getValue())
-                ) {
-                    SystemToast.add(this.minecraft.getToastManager(),
-                            SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
-                            Component.literal("Fish On Extras Rebirth"),
-                            Component.literal("Chat Notification name already exist"));
-
-                    return;
-                }
-
-                CustomChatNotificationDataHandler.instance().updateChatNotification(selectedChatNotificationId, nameEditBox.getValue(), stringEditBox.getValue());
-
+            if(this.save()) {
+                this.onClose();
             }
-                    this.onClose();
+        })
+        .pos(width - PADDING_HALF - BUTTON_WIDTH / 2, height - PADDING_HALF - BUTTON_HEIGHT)
+        .size(BUTTON_WIDTH / 2, BUTTON_HEIGHT)
+        .build();
+    }
+
+    private boolean save() {
+        if(selectedChatNotificationId != null) {
+            if(nameEditBox.getValue().isBlank()) {
+                SystemToast.add(this.minecraft.getToastManager(),
+                        SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                        Component.literal("Fish On Extras Rebirth"),
+                        Component.literal("Chat Notification name is empty"));
+
+                return false;
+            }
+
+            if(!Objects.equals(selectedChatNotificationId, nameEditBox.getValue())
+                    && CustomChatNotificationDataHandler.instance().getCustomChatNotificationData().notificationList.containsKey(nameEditBox.getValue())
+            ) {
+                SystemToast.add(this.minecraft.getToastManager(),
+                        SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                        Component.literal("Fish On Extras Rebirth"),
+                        Component.literal("Chat Notification name already exist"));
+
+                return false;
+            }
+
+            CustomChatNotificationDataHandler.instance().updateChatNotification(selectedChatNotificationId, nameEditBox.getValue(), stringEditBox.getValue());
+
+            ButtonListWidget.ButtonEntry entry = buttonEntryMap.remove(selectedChatNotificationId);
+            int index = buttonList.entryAt(entry);
+            buttonList.removeEntry(entry);
+
+            selectedChatNotificationId = nameEditBox.getValue();
+            this.header = Component.literal(selectedChatNotificationId);
+
+            ButtonListWidget.ButtonEntry buttonEntry = createChatNotificationEntry(selectedChatNotificationId);
+            buttonEntryMap.put(selectedChatNotificationId, buttonEntry);
+            buttonList.addEntryAtPos(buttonEntry, index);
+            buttonList.setSelected(buttonEntry);
+
+            return true;
+        }
+        return false;
+    }
+
+    private Button saveButton() {
+        return Button.builder(Component.literal("Save"), button -> {
+                    if(this.save()) {
+                        SystemToast.add(this.minecraft.getToastManager(),
+                                SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                                Component.literal("Chat notification saved"),
+                                Component.literal(selectedChatNotificationId));
+                    }
                 })
-                .pos(width - PADDING_HALF - BUTTON_WIDTH / 2, height - PADDING_HALF - BUTTON_HEIGHT)
-                .size(BUTTON_WIDTH / 2, BUTTON_HEIGHT)
+                .pos(width - PADDING_HALF - BUTTON_WIDTH / 2 - (PADDING_HALF + BUTTON_WIDTH / 4), height - PADDING_HALF - BUTTON_HEIGHT)
+                .size(BUTTON_WIDTH / 4, BUTTON_HEIGHT)
+                .tooltip(Tooltip.create(Component.literal("Can also use Ctrl+S")))
                 .build();
     }
 
     private Button backButton() {
         return Button.builder(Component.literal("Return"), button ->
-                    this.onClose())
-                .pos(width - (PADDING_HALF + BUTTON_WIDTH / 2) * 2, height - PADDING_HALF - BUTTON_HEIGHT)
-                .size(BUTTON_WIDTH / 2, BUTTON_HEIGHT)
+                        this.onClose())
+                .pos(width - PADDING_HALF - BUTTON_WIDTH / 2 - (PADDING_HALF + BUTTON_WIDTH / 4) * 2, height - PADDING_HALF - BUTTON_HEIGHT)
+                .size(BUTTON_WIDTH / 4, BUTTON_HEIGHT)
                 .build();
     }
 
@@ -391,7 +429,7 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
     }
 
     private void resetFields() {
-        this.header = Component.literal("No Chat Trigger Selected");
+        this.header = Component.literal("No Chat Notification Selected");
 
         nameEditBox.setValue("");
         nameEditBox.setHint(Component.literal(""));
@@ -403,6 +441,20 @@ public class CustomChatNotificationMakerScreen extends Screen implements ScreenC
 
         stringField = "";
         selectedChatNotificationId = null;
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent keyEvent) {
+        if(keyEvent.hasControlDown() && keyEvent.key() == GLFW.GLFW_KEY_S) {
+            if(this.save()) {
+                SystemToast.add(this.minecraft.getToastManager(),
+                        SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                        Component.literal("Chat notification saved"),
+                        Component.literal(selectedChatNotificationId));
+            }
+            return true;
+        }
+        return super.keyPressed(keyEvent);
     }
 
     @Override

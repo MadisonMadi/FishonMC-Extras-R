@@ -1,6 +1,7 @@
 package dannypx.foe;
 
 import dannypx.foe.config.Configs;
+import dannypx.foe.type.version.Version;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.loader.api.FabricLoader;
@@ -15,7 +16,9 @@ import java.util.Optional;
 public class FishOnMCExtras implements ModInitializer {
 	public static final String MOD_ID = "fishonmcextras";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final String SLUG = "iau5kAOK";
 	public static String VERSION = FishOnMCExtras.getModVersion();
+	public static Version VERSION_PARSED = Version.of(VERSION);
 	public static List<String> AUTHORS = FishOnMCExtras.getAuthors();
 	public static List<String> CONTRIBUTORS = FishOnMCExtras.getContributors();
 	public static Integer HUD_VERSION = FishOnMCExtras.getVersion("hud_version");
@@ -27,6 +30,7 @@ public class FishOnMCExtras implements ModInitializer {
 	public static Integer TIMER_VERSION = FishOnMCExtras.getVersion("timer_version");
 	public static Integer EVENT_TRIGGER_VERSION = FishOnMCExtras.getVersion("event_trigger_version");
 	public static Integer TRACKER_VERSION = FishOnMCExtras.getVersion("tracker_version");
+	public static Integer SNIPPET_VERSION = FishOnMCExtras.getVersion("snippet_version");
 
 	@Override
 	public void onInitialize() {
@@ -63,5 +67,12 @@ public class FishOnMCExtras implements ModInitializer {
 
 	private static Optional<ModContainer> getModContainer() {
 		return FabricLoader.getInstance().getModContainer(MOD_ID);
+	}
+
+	public static String getMinecraftVersion() {
+		return FabricLoader.getInstance()
+				.getModContainer("minecraft")
+				.map(container -> container.getMetadata().getVersion().getFriendlyString())
+				.orElse(null);
 	}
 }
