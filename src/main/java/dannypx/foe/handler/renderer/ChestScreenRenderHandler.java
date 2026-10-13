@@ -3,11 +3,11 @@ package dannypx.foe.handler.renderer;
 import dannypx.foe.handler.ScreenHandler;
 import dannypx.foe.handler.logic.LoadingHandler;
 import dannypx.foe.handler.logic.SearchHandler;
-import dannypx.foe.screens.widget.SearchBarWidget;
+import dannypx.foe.search.editbox.SearchBarEditBox;
 import dannypx.foe.type.tuple.Pair;
 import dannypx.foe.config.Configs;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -28,7 +28,7 @@ public class ChestScreenRenderHandler extends ScreenHandler {
     }
 
     //region Fields
-    SearchBarWidget searchBarWidget;
+    SearchBarEditBox searchBarWidget;
     //endregion
 
     //region Methods
@@ -53,15 +53,15 @@ public class ChestScreenRenderHandler extends ScreenHandler {
 
             widgets.add(searchBarWidget);
 
-            widgets.forEach(Screens.getWidgets(screen)::add);
+            widgets.forEach(Screens.getButtons(screen)::add);
         }
     }
 
     @Override
-    public void extractRenderState(Screen screen, GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float tickDelta) {
-        super.extractRenderState(screen, guiGraphicsExtractor, mouseX, mouseY, tickDelta);
+    public void render(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float tickDelta) {
+        super.render(screen, guiGraphics, mouseX, mouseY, tickDelta);
 
-        if(searchBarWidget != null) searchBarWidget.render(guiGraphicsExtractor, tickDelta);
+        if(searchBarWidget != null) searchBarWidget.renderHelp(guiGraphics, mouseX, mouseY, tickDelta);
     }
 
     public boolean checkMouseClick(Screen screen, MouseButtonEvent context, boolean consumed) {
@@ -73,7 +73,7 @@ public class ChestScreenRenderHandler extends ScreenHandler {
 
     public void onClose(Screen screen) {
         screen.setFocused(null);
-        Screens.getWidgets(screen).remove(searchBarWidget);
+        Screens.getButtons(screen).remove(searchBarWidget);
         SearchHandler.instance().setFocused(false);
         SearchHandler.instance().setOnScreen(false);
         searchBarWidget = null;
