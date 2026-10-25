@@ -8,7 +8,7 @@ import dannypx.foe.screens.interfaces.ScreenConstants;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -82,20 +82,20 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
     }
 
     @Override
-    protected void extractWidgetRenderState(@NotNull GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float delta) {
-        this.extractRenderBox(guiGraphicsExtractor);
-        this.extractRenderTooltip(guiGraphicsExtractor, mouseX, mouseY);
-        this.extractRenderAlignment(guiGraphicsExtractor);
-        this.element.extractRenderState(guiGraphicsExtractor, Minecraft.getInstance().getDeltaTracker());
+    protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        this.renderBox(guiGraphics);
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        this.renderAlignment(guiGraphics);
+        this.element.render(guiGraphics);
     }
 
-    private void extractRenderAlignment(GuiGraphicsExtractor guiGraphicsExtractor) {
+    private void renderAlignment(GuiGraphics guiGraphics) {
         int screenWidth = minecraft.getWindow().getGuiScaledWidth();
         int screenHeight = minecraft.getWindow().getGuiScaledHeight();
 
         switch (element.alignment) {
             case TOP_LEFT -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1,
                         getY() - 1,
                         getX() + 1,
@@ -103,14 +103,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() - 1, getY() - 1,
                         0,0,
                         CommonColors.RED
                 );
             }
             case TOP_RIGHT -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1 + getWidth(),
                         getY() - 1,
                         getX() + 1 + getWidth(),
@@ -118,14 +118,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() + 1 + getWidth(), getY() - 1,
                         screenWidth,0,
                         CommonColors.RED
                 );
             }
             case BOTTOM_LEFT -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1,
                         getY() - 1 + getHeight(),
                         getX() + 1,
@@ -133,14 +133,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() - 1, getY() + 1 + getHeight(),
                         0, screenHeight,
                         CommonColors.RED
                 );
             }
             case BOTTOM_RIGHT -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1 + getWidth(),
                         getY() - 1 + getHeight(),
                         getX() + 1 + getWidth(),
@@ -148,14 +148,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() + 1 + getWidth(), getY() + 1 + getHeight(),
                         screenWidth, screenHeight,
                         CommonColors.RED
                 );
             }
             case TOP -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1 + (getWidth() / 2),
                         getY() - 1,
                         getX() + 1 + (getWidth() / 2),
@@ -163,14 +163,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() + (getWidth() / 2), getY() - 1,
                         screenWidth / 2, 0,
                         CommonColors.RED
                 );
             }
             case BOTTOM -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1 + (getWidth() / 2),
                         getY() - 1 + getHeight(),
                         getX() + 1 + (getWidth() / 2),
@@ -178,14 +178,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() + (getWidth() / 2), getY() + 1 + getHeight(),
                         screenWidth / 2, screenHeight,
                         CommonColors.RED
                 );
             }
             case LEFT -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1,
                         getY() - 1 + (getHeight() / 2),
                         getX() + 1,
@@ -193,14 +193,14 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() - 1, getY() + (getHeight() / 2),
                         0, screenHeight / 2,
                         CommonColors.RED
                 );
             }
             case RIGHT -> {
-                guiGraphicsExtractor.fill(
+                guiGraphics.fill(
                         getX() - 1 + getWidth(),
                         getY() - 1 + (getHeight() / 2),
                         getX() + 1 + getWidth(),
@@ -208,7 +208,7 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
                         CommonColors.RED
                 );
 
-                GuiGraphicsHelper.drawLine(guiGraphicsExtractor,
+                GuiGraphicsHelper.drawLine(guiGraphics,
                         getX() + 1 + getWidth(), getY() + (getHeight() / 2),
                         screenWidth, screenHeight / 2,
                         CommonColors.RED
@@ -217,7 +217,7 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
         }
     }
 
-    private void extractRenderTooltip(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY) {
+    private void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if(this.isHovered()) {
             List<Component> componentList = List.of(
                     Component.literal(element.message.getString()).withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD),
@@ -235,27 +235,27 @@ public class MovableBoxWidget extends AbstractWidget implements ScreenConstants 
 
             );
 
-            guiGraphicsExtractor.setComponentTooltipForNextFrame(minecraft.font, componentList, mouseX, mouseY);
+            guiGraphics.setComponentTooltipForNextFrame(minecraft.font, componentList, mouseX, mouseY);
         }
     }
 
-    private void extractRenderBox(GuiGraphicsExtractor guiGraphicsExtractor) {
+    private void renderBox(GuiGraphics guiGraphics) {
         switch (element.alignment) {
-            case LEFT, TOP_LEFT, BOTTOM_LEFT -> GuiGraphicsHelper.drawHorizontalGradient(guiGraphicsExtractor,
+            case LEFT, TOP_LEFT, BOTTOM_LEFT -> GuiGraphicsHelper.drawHorizontalGradient(guiGraphics,
                     getX() - PADDING_QUART, getY() - PADDING_QUART,
                     getX() + getWidth() + PADDING_QUART, getY() + getHeight() + PADDING_QUART,
                     this.isHovered() ? CommonColors.GRAY : CommonColors.DARK_GRAY,
                     this.isHovered() ? 0x00AAAAAA : 0x00555555);
-            case RIGHT, TOP_RIGHT, BOTTOM_RIGHT -> GuiGraphicsHelper.drawHorizontalGradient(guiGraphicsExtractor,
+            case RIGHT, TOP_RIGHT, BOTTOM_RIGHT -> GuiGraphicsHelper.drawHorizontalGradient(guiGraphics,
                     getX() - PADDING_QUART, getY() - PADDING_QUART,
                     getX() + getWidth() + PADDING_QUART, getY() + getHeight() + PADDING_QUART,
                     this.isHovered() ? 0x00AAAAAA : 0x00555555,
                     this.isHovered() ? CommonColors.GRAY : CommonColors.DARK_GRAY);
-            case TOP -> guiGraphicsExtractor.fillGradient(getX() - PADDING_QUART, getY() - PADDING_QUART,
+            case TOP -> guiGraphics.fillGradient(getX() - PADDING_QUART, getY() - PADDING_QUART,
                     getX() + getWidth() + PADDING_QUART, getY() + getHeight() + PADDING_QUART,
                     this.isHovered() ? CommonColors.GRAY : CommonColors.DARK_GRAY,
                     this.isHovered() ? 0x00AAAAAA : 0x00555555);
-            case BOTTOM -> guiGraphicsExtractor.fillGradient(getX() - PADDING_QUART, getY() - PADDING_QUART,
+            case BOTTOM -> guiGraphics.fillGradient(getX() - PADDING_QUART, getY() - PADDING_QUART,
                     getX() + getWidth() + PADDING_QUART, getY() + getHeight() + PADDING_QUART,
                     this.isHovered() ? 0x00AAAAAA : 0x00555555,
                     this.isHovered() ? CommonColors.GRAY : CommonColors.DARK_GRAY);

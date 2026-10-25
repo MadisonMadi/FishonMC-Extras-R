@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Objects;
 
 import dannypx.foe.type.StringStyle;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -70,16 +69,17 @@ public class NotificationElement extends Element implements ScreenConstants {
     }
 
     //region Methods
-    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) {
+    @Override
+    public void render(GuiGraphics guiGraphics) {
         if(isError) {
             return;
         }
-        this.extractRenderBox(guiGraphicsExtractor);
-        this.extractRenderItem(guiGraphicsExtractor, itemStack);
-        this.extractRenderText(guiGraphicsExtractor, font, componentList, rows, columns);
+        this.renderBox(guiGraphics);
+        this.renderItem(guiGraphics, itemStack);
+        this.renderComponent(guiGraphics, font, componentList, rows, columns);
     }
 
-    private void extractRenderText(GuiGraphicsExtractor guiGraphicsExtractor, Font font, List<Component> componentList, int rows, int columns) {
+    private void renderComponent(GuiGraphics guiGraphics, Font font, List<Component> componentList, int rows, int columns) {
         for (int row = 0; row < rows; row++) {
             for (int column = 0; column < columns; column++) {
                 int componentX = itemStack.isEmpty()
@@ -98,7 +98,7 @@ public class NotificationElement extends Element implements ScreenConstants {
                 Component component = componentList.get((row * columns) + column);
 
                 if(!Objects.equals(component, Component.empty())) {
-                    GuiGraphicsHelper.text(guiGraphicsExtractor, font, component,
+                    GuiGraphicsHelper.drawString(guiGraphics, font, component,
                             componentX, componentY,
                             StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.HAS_CUSTOM_FONT, StringStyle.SMALL_CAPS
                     );
@@ -107,15 +107,15 @@ public class NotificationElement extends Element implements ScreenConstants {
         }
     }
 
-    private void extractRenderItem(GuiGraphicsExtractor guiGraphicsExtractor, ItemStack itemStack) {
+    private void renderItem(GuiGraphics guiGraphics, ItemStack itemStack) {
         if(!itemStack.isEmpty()) {
-            guiGraphicsExtractor.item(itemStack, x + BOX_PADDING, y + this.height / 2 - 16 / 2);
+            guiGraphics.renderItem(itemStack, x + BOX_PADDING, y + this.height / 2 - 16 / 2);
         }
     }
 
-    private void extractRenderBox(GuiGraphicsExtractor guiGraphicsExtractor) {
+    private void renderBox(GuiGraphics guiGraphics) {
         // Top Left
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 this.x, this.y,
                 0, 0,
@@ -125,7 +125,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Top
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 this.x + 5, this.y,
                 5, 0,
@@ -135,7 +135,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Top Right
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 x + this.width - 5, this.y,
                 10, 0,
@@ -145,7 +145,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Centre Left
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 this.x, this.y + 5,
                 0, 5,
@@ -155,7 +155,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Centre
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 this.x + 5, this.y + 5,
                 5, 5,
@@ -165,7 +165,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Centre Right
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 x + this.width - 5, this.y + 5,
                 10, 5,
@@ -175,7 +175,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Bottom Left
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 this.x, y + this.height - 5,
                 0, 10,
@@ -185,7 +185,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Bottom
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 this.x + 5, y + this.height - 5,
                 5, 10,
@@ -195,7 +195,7 @@ public class NotificationElement extends Element implements ScreenConstants {
         );
 
         // Bottom Right
-        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 x + this.width - 5, y + this.height - 5,
                 10, 10,

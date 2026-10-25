@@ -10,10 +10,9 @@ import dannypx.foe.screens.interfaces.ScreenConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class NotifierElement extends Element implements ScreenConstants {
     //region Fields
@@ -44,12 +43,12 @@ public class NotifierElement extends Element implements ScreenConstants {
 
     //region Methods
     @Override
-    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) {
+    public void render(GuiGraphics guiGraphics) {
         int scaledWidth = (int) (Minecraft.getInstance().getWindow().getGuiScaledWidth() * (1 / Configs.hudConfig.notifierElementScale.get()));
         int scaledHeight = (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * (1 / Configs.hudConfig.notifierElementScale.get()));
 
-        guiGraphicsExtractor.pose().pushMatrix();
-        guiGraphicsExtractor.pose().scale(Configs.hudConfig.notifierElementScale.get(), Configs.hudConfig.notifierElementScale.get());
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().scale(Configs.hudConfig.notifierElementScale.get(), Configs.hudConfig.notifierElementScale.get());
         if(LoadingHandler.instance().isLoadingDone()
                 && Configs.hudConfig.showNotifierElement.get()
         ) {
@@ -85,17 +84,17 @@ public class NotifierElement extends Element implements ScreenConstants {
                 default -> y;
             };
 
-            this.extractRenderNotifications(guiGraphicsExtractor, deltaTracker, x, y);
+            this.renderNotifications(guiGraphics, x, y);
         }
-        guiGraphicsExtractor.pose().popMatrix();
+        guiGraphics.pose().popMatrix();
     }
 
-    private void extractRenderNotifications(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker, int x, int y) {
+    private void renderNotifications(GuiGraphics guiGraphics, int x, int y) {
         AtomicInteger yTranslation = new AtomicInteger(y);
         for (NotificationElement notificationElement : notificationElements) {
             notificationElement.setX(x);
             notificationElement.setY(yTranslation.get());
-            notificationElement.extractRenderState(guiGraphicsExtractor, deltaTracker);
+            notificationElement.render(guiGraphics);
 
             yTranslation.addAndGet(notificationElement.height + PADDING_QUART);
         }

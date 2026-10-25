@@ -2,6 +2,7 @@ package dannypx.foe;
 
 import dannypx.foe.command.CommandRegistry;
 import dannypx.foe.entity.FishingHookEntityModel;
+import dannypx.foe.entity.RodCubeLayer;
 import dannypx.foe.handler.fetch.*;
 import dannypx.foe.handler.io.ChangelogFetcherHandler;
 import dannypx.foe.handler.logic.*;
@@ -10,6 +11,11 @@ import dannypx.foe.handler.store.*;
 import dannypx.foe.handler.io.DataFileHandler;
 import dannypx.foe.config.Configs;
 import dannypx.foe.handler.logic.PlaceholderHandler;
+import dannypx.foe.nearby_dispatcher.types.ModUserType;
+import dannypx.foe.nearby_dispatcher.types.NearbyBigType;
+import dannypx.foe.nearby_dispatcher.NearbyDispatcher;
+import dannypx.foe.nearby_dispatcher.types.HatType;
+import dannypx.foe.nearby_dispatcher.types.RodType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -18,15 +24,21 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -48,8 +60,15 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
         ClientEntityEvents.ENTITY_UNLOAD.register(this::onEntityUnload);
         ScreenEvents.AFTER_INIT.register(this::onAfterInitScreen);
         ItemTooltipCallback.EVENT.register(this::onItemTooltip);
+        LivingEntityFeatureRendererRegistrationCallback.EVENT.register(this::onLivingEntityFeatureRenderingRegistrationCallback);
 
         this.initHudRenderer();
+    }
+
+    private void onLivingEntityFeatureRenderingRegistrationCallback(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?,?,?> livingEntityRenderer, LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper registrationHelper, EntityRendererProvider.Context context) {
+        if (entityType == EntityType.PLAYER && livingEntityRenderer instanceof AvatarRenderer<?> avatarRenderer) {
+            registrationHelper.register(RodCubeLayer.create(avatarRenderer));
+        }
     }
 
     private void onItemTooltip(ItemStack itemStack, Item.TooltipContext tooltipContext, TooltipFlag tooltipType, List<Component> lines) {
@@ -60,7 +79,7 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
         if(minecraftClient.options.guiScale().get() == 0) {
             minecraftClient.options.guiScale().set(3);
             minecraftClient.options.save();
-            minecraftClient.resizeGui();
+            minecraftClient.resizeDisplay();
         }
     }
 
@@ -76,8 +95,6 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
         ScreenHander.instance().onAfterInitScreen(minecraft, screen, scaledWidth, scaledHeight);
     }
 
-
-
     private void onEntityUnload(Entity entity, ClientLevel clientLevel) {
         ChummerHandler.instance().onEntityUnload(entity, clientLevel);
     }
@@ -90,8 +107,11 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
         this.registerEntityModels();
         CodeExecuterHandler.instance().init();
         CommandRegistry.init();
+        ParticleHandler.instance().init();
         PlaceholderHandler.instance().init();
         ChangelogFetcherHandler.instance().fetch(false);
+
+        NearbyDispatcher.init();
     }
 
     private void onLeave(ClientPacketListener clientPacketListener, Minecraft minecraft) {
@@ -100,6 +120,7 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
 
         InventoryHandler.instance().onLeave();
         ChummerHandler.instance().onLeave();
+        TextDisplayHandler.instance().onLeave();
     }
 
     private void onJoin(ClientPacketListener clientPacketListener, PacketSender packetSender, Minecraft minecraft) {
@@ -110,6 +131,7 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
             ConstantDataHandler.instance().init();
             QuestDataHandler.instance().init();
             CrewDataHandler.instance().init();
+            TextDisplayHandler.instance().init();
             CustomHudDataHandler.instance().init();
             CustomHudIconDataHandler.instance().init();
             CustomButtonDataHandler.instance().init();
@@ -176,6 +198,6 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
     }
 
     private void registerEntityModels() {
-        ModelLayerRegistry.registerModelLayer(FishingHookEntityModel.MODEL_LAYER, FishingHookEntityModel::generateModel);
+        EntityModelLayerRegistry.registerModelLayer(FishingHookEntityModel.MODEL_LAYER, FishingHookEntityModel::generateModel);
     }
 }
