@@ -3,6 +3,7 @@ package dannypx.foe.screens.element.hud;
 import dannypx.foe.FishOnMCExtras;
 import dannypx.foe.handler.fetch.BossEventHandler;
 import dannypx.foe.handler.fetch.TabOverlayHandler;
+import dannypx.foe.handler.logic.CrewHandler;
 import dannypx.foe.handler.logic.LoadingHandler;
 import dannypx.foe.helper.TextHelper;
 import dannypx.foe.config.Configs;
@@ -115,7 +116,25 @@ public class LocationElement extends Element {
         int component3y = 26;
 
         Component time = BossEventHandler.instance().getTime();
-        int timeWidth = font.width(TextHelper.smallCaps(time.getString()));
+        Component nearbyCrew = TextHelper.literal(CrewHandler.instance().isCrewNearby(), true);
+
+        Component crewtimeTotal = switch (Configs.hudConfig.locationElementAlignment.get()) {
+            case TOP_LEFT -> TextHelper.concat(
+                    time,
+                    Component.literal(" | ").withStyle(ChatFormatting.DARK_GRAY),
+                    Component.literal("Crew Nearby: ").withStyle(ChatFormatting.WHITE),
+                    nearbyCrew
+            );
+            case TOP_RIGHT -> TextHelper.concat(
+                    Component.literal("Crew Nearby: ").withStyle(ChatFormatting.WHITE),
+                    nearbyCrew,
+                    Component.literal(" | ").withStyle(ChatFormatting.DARK_GRAY),
+                    time
+            );
+            default -> Component.empty();
+        };
+
+        int crewtimeWidth = font.width(TextHelper.smallCaps(time.getString()));
 
         switch (Configs.hudConfig.locationElementAlignment.get()) {
             case TOP_LEFT -> {
@@ -130,7 +149,7 @@ public class LocationElement extends Element {
                         StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.SMALL_CAPS);
 
                 GuiGraphicsHelper.text(guiGraphicsExtractor, font,
-                        time,
+                        crewtimeTotal,
                         x + component3x, y + component3y,
                         StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.SMALL_CAPS);
             }
@@ -146,8 +165,8 @@ public class LocationElement extends Element {
                         StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.SMALL_CAPS);
 
                 GuiGraphicsHelper.text(guiGraphicsExtractor, font,
-                        time,
-                        x - component3x - timeWidth, y + component3y,
+                        crewtimeTotal,
+                        x - component3x - crewtimeWidth, y + component3y,
                         StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.SMALL_CAPS);
             }
         }
