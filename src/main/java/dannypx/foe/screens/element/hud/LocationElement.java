@@ -133,8 +133,7 @@ public class LocationElement extends Element {
             );
             default -> Component.empty();
         };
-
-        int crewtimeWidth = font.width(TextHelper.smallCaps(time.getString()));
+        int crewtimeWidth = font.width(TextHelper.smallCaps(crewtimeTotal.getString()));
 
         switch (Configs.hudConfig.locationElementAlignment.get()) {
             case TOP_LEFT -> {

@@ -105,8 +105,18 @@ public class BossEventHandler extends Handler {
                             locationString = locationString.substring(0, locationString.indexOf("(") - 1);
                         }
 
-                        location = Component.literal(locationString)
-                                .withColor(TextColor.parseColor(locationObject.get("color").getAsString()).getOrThrow().getValue());
+                        List<TextColor> letterColors = LOCATION_LETTER_COLORS.get(locationString);
+                        if (letterColors != null) {
+                            MutableComponent styled = Component.empty();
+                            for (int i = 0; i < locationString.length(); i++) {
+                                int colorValue = (i < letterColors.size()) ? letterColors.get(i).getValue() : 0xFFFFFF;
+                                styled.append(Component.literal(String.valueOf(locationString.charAt(i))).withColor(colorValue));
+                            }
+                            location = styled;
+                        } else {
+                            TextColor color = LOCATION_COLORS.get(locationString);
+                            location = Component.literal(locationString).withColor(color != null ? color.getValue() : 0xFFFFFF);
+                        }
 
                         JsonObject weatherObject = jsonObject.get("extra").getAsJsonArray().get(2).getAsJsonObject()
                                 .get("extra").getAsJsonArray().get(0).getAsJsonObject();
