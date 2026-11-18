@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -56,14 +56,14 @@ public class CustomHudElement extends Element implements ScreenConstants {
 
     //region Methods
     @Override
-    public void render(GuiGraphics guiGraphics) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor) {
         if(!customHud.isShowElement()) { return; }
 
         int scaledWidth = (int) (Minecraft.getInstance().getWindow().getGuiScaledWidth() * (1 / customHud.getScale()));
         int scaledHeight = (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * (1 / customHud.getScale()));
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(customHud.getScale(), customHud.getScale());
+        guiGraphicsExtractor.pose().pushMatrix();
+        guiGraphicsExtractor.pose().scale(customHud.getScale(), customHud.getScale());
         if(LoadingHandler.instance().isLoadingDone()
                 && TabOverlayHandler.instance().isInInstance()
         ) {
@@ -102,14 +102,14 @@ public class CustomHudElement extends Element implements ScreenConstants {
                     default -> 0;
                 };
 
-                this.renderBox(guiGraphics, x, y);
-                this.renderComponent(guiGraphics, x, y);
+                this.extractRenderBox(guiGraphicsExtractor, x, y);
+                this.extractRenderText(guiGraphicsExtractor, x, y);
             }
         }
-        guiGraphics.pose().popMatrix();
+        guiGraphicsExtractor.pose().popMatrix();
     }
 
-    private void renderComponent(GuiGraphics guiGraphics, int x, int y) {
+    private void extractRenderText(GuiGraphicsExtractor guiGraphicsExtractor, int x, int y) {
         int componentX;
         int componentY;
 
@@ -129,13 +129,13 @@ public class CustomHudElement extends Element implements ScreenConstants {
         componentLines.forEach(componentParts -> {
             if(componentParts.value1()) {
                 if(componentParts.value2()) {
-                    GuiGraphicsHelper.drawString(guiGraphics, Minecraft.getInstance().font, componentParts.value3(),
+                    GuiGraphicsHelper.text(guiGraphicsExtractor, Minecraft.getInstance().font, componentParts.value3(),
                             componentX - (PADDING + BOX_PADDING) + boxWidth / 2 - TextHelper.getWidth(Minecraft.getInstance().font, componentParts.value3(), componentParts.value2()) / 2,
                             componentY + line.getAndIncrement() * LINE_HEIGHT,
                             StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.HAS_CUSTOM_FONT, StringStyle.SMALL_CAPS
                     );
                 } else {
-                    GuiGraphicsHelper.drawString(guiGraphics, Minecraft.getInstance().font, componentParts.value3(),
+                    GuiGraphicsHelper.text(guiGraphicsExtractor, Minecraft.getInstance().font, componentParts.value3(),
                             componentX - (PADDING + BOX_PADDING) + boxWidth / 2 - TextHelper.getWidth(Minecraft.getInstance().font, componentParts.value3(), componentParts.value2()) / 2,
                             componentY + line.getAndIncrement() * LINE_HEIGHT,
                             StringStyle.SHADOW, StringStyle.HAS_CUSTOM_FONT
@@ -143,13 +143,13 @@ public class CustomHudElement extends Element implements ScreenConstants {
                 }
             } else {
                 if(componentParts.value2()) {
-                    GuiGraphicsHelper.drawString(guiGraphics, Minecraft.getInstance().font, componentParts.value3(),
+                    GuiGraphicsHelper.text(guiGraphicsExtractor, Minecraft.getInstance().font, componentParts.value3(),
                             componentX,
                             componentY + line.getAndIncrement() * LINE_HEIGHT,
                             StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.HAS_CUSTOM_FONT, StringStyle.SMALL_CAPS
                     );
                 } else {
-                    GuiGraphicsHelper.drawString(guiGraphics, Minecraft.getInstance().font, componentParts.value3(),
+                    GuiGraphicsHelper.text(guiGraphicsExtractor, Minecraft.getInstance().font, componentParts.value3(),
                             componentX,
                             componentY + line.getAndIncrement() * LINE_HEIGHT,
                             StringStyle.SHADOW, StringStyle.HAS_CUSTOM_FONT
@@ -159,7 +159,7 @@ public class CustomHudElement extends Element implements ScreenConstants {
         });
     }
 
-    private void renderBox(GuiGraphics guiGraphics, int x, int y) {
+    private void extractRenderBox(GuiGraphicsExtractor guiGraphicsExtractor, int x, int y) {
         int boxX = x;
         int boxY = y;
 
@@ -177,14 +177,14 @@ public class CustomHudElement extends Element implements ScreenConstants {
         int NIB_HEIGHT = 3;
 
         // Alpha Box
-        if(customHud.isShowBackground()) guiGraphics.fill(
-                boxX + BOX_PADDING, boxY + 1,
-                boxX + this.boxWidth - BOX_PADDING, boxY + this.boxHeight - 3,
+        if(customHud.isShowBackground()) guiGraphicsExtractor.fill(
+                boxX + BOX_PADDING, boxY + BOX_PADDING,
+                boxX + this.boxWidth - BOX_PADDING, boxY + this.boxHeight - BOX_PADDING,
                 0x7f000000
         );
 
         // Top Left
-        if(customHud.isShowBars()) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHud.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX, boxY,
                 0, NIB_HEIGHT,
@@ -194,7 +194,7 @@ public class CustomHudElement extends Element implements ScreenConstants {
         );
 
         // Top
-        if(customHud.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHud.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + ATLAS_CORNER, boxY,
                 ATLAS_CORNER, NIB_HEIGHT,
@@ -204,7 +204,7 @@ public class CustomHudElement extends Element implements ScreenConstants {
         );
 
         // Top Right
-        if(customHud.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHud.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + this.boxWidth - ATLAS_CORNER, boxY,
                 ATLAS_CORNER + ATLAS_BAR_WIDTH, NIB_HEIGHT,
@@ -214,7 +214,7 @@ public class CustomHudElement extends Element implements ScreenConstants {
         );
 
         // Bottom Left
-        if(customHud.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHud.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX, boxY + this.boxHeight - ATLAS_CORNER,
                 0, 0,
@@ -224,7 +224,7 @@ public class CustomHudElement extends Element implements ScreenConstants {
         );
 
         // Bottom
-        if(customHud.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHud.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + ATLAS_CORNER, boxY + this.boxHeight - ATLAS_CORNER + NIB_HEIGHT,
                 ATLAS_CORNER, NIB_HEIGHT,
@@ -234,7 +234,7 @@ public class CustomHudElement extends Element implements ScreenConstants {
         );
 
         // Bottom Right
-        if(customHud.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHud.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + this.boxWidth - ATLAS_CORNER, boxY + this.boxHeight - ATLAS_CORNER,
                 ATLAS_CORNER + ATLAS_BAR_WIDTH, 0,

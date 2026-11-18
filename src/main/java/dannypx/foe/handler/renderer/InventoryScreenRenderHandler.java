@@ -22,7 +22,7 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -72,42 +72,42 @@ public class InventoryScreenRenderHandler extends ScreenHandler {
         this.initElements();
     }
 
-    public void render(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float tickDelta) {
+    public void extractRenderState(Screen screen, GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float tickDelta) {
         if(LoadingHandler.instance().isLoadingDone()
                 && Configs.mainConfig.enableMod.get()
         ) {
-            this.renderButtonHelp(guiGraphics, true, false);
+            this.extractRenderButtonHelp(guiGraphicsExtractor, true, false);
 
-            elements.forEach(element -> element.value2().render(guiGraphics));
+            elements.forEach(element -> element.value2().extractRenderState(guiGraphicsExtractor));
             if(this.statList != null
                     && Configs.inventoryScreenConfig.showStatsElement.get()
             ) {
-                this.statList.render(guiGraphics, mouseX, mouseY, tickDelta);
-                this.renderStatBoxHeaderString(guiGraphics);
+                this.statList.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, tickDelta);
+                this.renderStatBoxHeaderString(guiGraphicsExtractor);
             }
-            this.renderButtonBoxString(guiGraphics);
+            this.renderButtonBoxString(guiGraphicsExtractor);
         }
     }
 
 
-    private void renderButtonBoxString(GuiGraphics guiGraphics) {
+    private void renderButtonBoxString( GuiGraphicsExtractor guiGraphicsExtractor) {
         if(CustomButtonDataHandler.instance().getCustomButtonData().buttonList.getOrDefault(CustomButtonDataHandler.CustomButtonDataModel.INVENTORY_SCREEN, Pair.of(new ArrayList<>(), false)).value2()
                 && buttonBoxRows == 0
         ) {
-            guiGraphics.drawCenteredString(font, Component.literal("You have no custom buttons").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY),
+            guiGraphicsExtractor.centeredText(font, Component.literal("You have no custom buttons").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY),
                     minecraft.getWindow().getGuiScaledWidth() / 2,
                     minecraft.getWindow().getGuiScaledHeight() / 2 + INVENTORY_HEIGHT / 2 + 8 - font.lineHeight / 2,
                     CommonColors.WHITE);
         }
     }
 
-    private void renderStatBoxHeaderString(GuiGraphics guiGraphics) {
+    private void renderStatBoxHeaderString( GuiGraphicsExtractor guiGraphicsExtractor) {
         Component headerText = Component.literal("Fishing Statistics").withStyle(ChatFormatting.BOLD);
         int headerWidth = font.width(
                 Component.literal(TextHelper.smallCaps(headerText.getString())).setStyle(headerText.getStyle())
         );
 
-        GuiGraphicsHelper.drawString(guiGraphics, font, headerText,
+        GuiGraphicsHelper.text(guiGraphicsExtractor, font, headerText,
                 minecraft.getWindow().getGuiScaledWidth() / 2 + INVENTORY_TRANSLATION
                         + (STAT_WIDTH - ((STAT_WIDTH / 4) / 3)) / 2 - headerWidth / 2,
                 minecraft.getWindow().getGuiScaledHeight() / 2
@@ -191,7 +191,7 @@ public class InventoryScreenRenderHandler extends ScreenHandler {
             }
             widgets.add(buttonMenuToggle);
 
-            widgets.forEach(Screens.getButtons(screen)::add);
+            widgets.forEach(Screens.getWidgets(screen)::add);
         }
     }
 
@@ -201,14 +201,14 @@ public class InventoryScreenRenderHandler extends ScreenHandler {
                 minecraft.getWindow().getGuiScaledHeight() / 2 + INVENTORY_HEIGHT / 2 - 3,
                 40, 12,
                 (button) -> {
-                    Screens.getButtons(screen).remove(buttonMenuToggle);
+                    Screens.getWidgets(screen).remove(buttonMenuToggle);
                     buttonMenuToggle = getCloseButtonMenuButton(screen);
-                    Screens.getButtons(screen).add(buttonMenuToggle);
+                    Screens.getWidgets(screen).add(buttonMenuToggle);
 
-                    Screens.getButtons(screen).add(buttonMenuEditor);
+                    Screens.getWidgets(screen).add(buttonMenuEditor);
 
                     elements.add(buttonBox);
-                    Screens.getButtons(screen).addAll(buttons);
+                    Screens.getWidgets(screen).addAll(buttons);
 
                     CustomButtonDataHandler.instance().updateButton(CustomButtonDataHandler.CustomButtonDataModel.INVENTORY_SCREEN, true);
                 })
@@ -224,14 +224,14 @@ public class InventoryScreenRenderHandler extends ScreenHandler {
                         : minecraft.getWindow().getGuiScaledHeight() / 2 + INVENTORY_HEIGHT / 2 + 17,
                 40, 12,
                 (button) -> {
-                    Screens.getButtons(screen).remove(buttonMenuToggle);
+                    Screens.getWidgets(screen).remove(buttonMenuToggle);
                     buttonMenuToggle = getOpenButtonMenuButton(screen);
-                    Screens.getButtons(screen).add(buttonMenuToggle);
+                    Screens.getWidgets(screen).add(buttonMenuToggle);
 
-                    Screens.getButtons(screen).remove(buttonMenuEditor);
+                    Screens.getWidgets(screen).remove(buttonMenuEditor);
 
                     elements.remove(buttonBox);
-                    Screens.getButtons(screen).removeAll(buttons);
+                    Screens.getWidgets(screen).removeAll(buttons);
 
                     CustomButtonDataHandler.instance().updateButton(CustomButtonDataHandler.CustomButtonDataModel.INVENTORY_SCREEN, false);
                 })

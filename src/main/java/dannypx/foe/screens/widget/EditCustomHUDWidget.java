@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
@@ -247,13 +247,13 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
     }
 
     @Override
-    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    protected void extractWidgetRenderState(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float delta) {
         int entryStartY = getY() + headerHeight + PADDING + (editBoxHeight + PADDING) * 2;
 
-        guiGraphics.fill(getX(), getY(), getRight(), getBottom(), 0x55000000);
-        guiGraphics.hLine(getX(), getRight(), getBottom(), CommonColors.GRAY);
-        guiGraphics.vLine(getX(), 0, getBottom(), CommonColors.GRAY);
-        guiGraphics.drawCenteredString(
+        guiGraphicsExtractor.fill(getX(), getY(), getRight(), getBottom(), 0x55000000);
+        guiGraphicsExtractor.horizontalLine(getX(), getRight(), getBottom(), CommonColors.GRAY);
+        guiGraphicsExtractor.verticalLine(getX(), 0, getBottom(), CommonColors.GRAY);
+        guiGraphicsExtractor.centeredText(
                 minecraft.font,
                 header,
                 getX() + width / 2,
@@ -262,7 +262,7 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
         );
 
         // Draw scale text
-        guiGraphics.drawString(
+        guiGraphicsExtractor.text(
                 minecraft.font,
                 "Scale",
                 getX() + width / 3,
@@ -271,13 +271,13 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
                 true
         );
 
-        idEditBox.render(guiGraphics, mouseX, mouseY, delta);
-        scaleEditBox.render(guiGraphics, mouseX, mouseY, delta);
-        showBackgroundCheckBox.render(guiGraphics, mouseX, mouseY, delta);
-        showBarsCheckBox.render(guiGraphics, mouseX, mouseY, delta);
-        showElementCheckBox.render(guiGraphics, mouseX, mouseY, delta);
+        idEditBox.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+        scaleEditBox.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+        showBackgroundCheckBox.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+        showBarsCheckBox.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+        showElementCheckBox.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
 
-        guiGraphics.enableScissor(
+        guiGraphicsExtractor.enableScissor(
                 getX() + PADDING,
                 entryStartY,
                 getRight() - PADDING,
@@ -294,7 +294,7 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
 
             LineEntry entry = entries.get(i);
             entry.setPosition(getX() + PADDING, entryY, width - PADDING - PADDING - scrollbarWidth - PADDING);
-            entry.render(guiGraphics, mouseX, mouseY, delta);
+            entry.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
             renderedEntries.add(entry);
         }
 
@@ -308,7 +308,7 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
 
             int scrollbarX = getX() + width - PADDING - scrollbarWidth;
 
-            guiGraphics.fill(
+            guiGraphicsExtractor.fill(
                     scrollbarX,
                     scrollbarY,
                     scrollbarX + scrollbarWidth,
@@ -317,10 +317,10 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
             );
         }
 
-        guiGraphics.disableScissor();
+        guiGraphicsExtractor.disableScissor();
 
         for (LineEntry entry : renderedEntries) {
-            entry.renderSuggestions(guiGraphics, mouseX, mouseY);
+            entry.renderSuggestions(guiGraphicsExtractor, mouseX, mouseY);
         }
     }
 
@@ -501,8 +501,8 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
             int stringWidth = width - PADDING - PADDING - 6 - PADDING - SPACING - BUTTON_SIZE * 2 - PADDING_QUART - SPACING - SMALL_STRING_SPACING - CHECKBOX_SIZE - SPACING - CHECKBOX_SIZE - CENTRE_STRING_SPACING - 20;
             editBoxWidget.setHint(Component.literal(
                     minecraftClient.font.width(defaultLine) > stringWidth
-                    ? minecraftClient.font.plainSubstrByWidth(defaultLine, stringWidth) + "..."
-                    : defaultLine
+                            ? minecraftClient.font.plainSubstrByWidth(defaultLine, stringWidth) + "..."
+                            : defaultLine
             ));
 
             editBoxWidget.setResponder(s -> {
@@ -568,25 +568,25 @@ public class EditCustomHUDWidget extends AbstractWidget implements ScreenConstan
             );
         }
 
-        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-            editBoxWidget.render(guiGraphics, mouseX, mouseY, delta);
-            isCentreWidget.render(guiGraphics, mouseX, mouseY, delta);
-            isSmallWidget.render(guiGraphics, mouseX, mouseY, delta);
-            addButton.render(guiGraphics, mouseX, mouseY, delta);
-            deleteButton.render(guiGraphics, mouseX, mouseY, delta);
+        public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float delta) {
+            editBoxWidget.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+            isCentreWidget.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+            isSmallWidget.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+            addButton.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
+            deleteButton.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
 
-            this.renderTooltips(guiGraphics, mouseX, mouseY, delta);
+            this.renderTooltips(guiGraphicsExtractor, mouseX, mouseY, delta);
         }
 
-        private void renderTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        private void renderTooltips(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
             if(editBoxWidget.isFocused()
                     && editBoxWidget.isMouseOver(mouseX, mouseY)) {
                 guiGraphics.setTooltipForNextFrame(minecraftClient.font, Component.literal("You can also use placeholders. See wiki"), mouseX, mouseY);
             }
         }
 
-        public void renderSuggestions(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-            editBoxWidget.renderSuggestions(guiGraphics, mouseX, mouseY);
+        public void renderSuggestions(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY) {
+            editBoxWidget.renderSuggestions(guiGraphicsExtractor, mouseX, mouseY);
         }
 
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubled) {

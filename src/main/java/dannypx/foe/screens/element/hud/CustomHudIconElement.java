@@ -13,8 +13,9 @@ import dannypx.foe.screens.interfaces.ScreenConstants;
 import dannypx.foe.type.Alignment;
 import dannypx.foe.type.custom_value.ItemStackValue;
 import dannypx.foe.type.tuple.Pair;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -52,14 +53,14 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
 
     //region Methods
     @Override
-    public void render(GuiGraphics guiGraphics) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor) {
         if(!customHudIcon.isShowElement()) { return; }
 
         int scaledWidth = (int) (Minecraft.getInstance().getWindow().getGuiScaledWidth() * (1 / customHudIcon.getScale()));
         int scaledHeight = (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * (1 / customHudIcon.getScale()));
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(customHudIcon.getScale(), customHudIcon.getScale());
+        guiGraphicsExtractor.pose().pushMatrix();
+        guiGraphicsExtractor.pose().scale(customHudIcon.getScale(), customHudIcon.getScale());
         if(LoadingHandler.instance().isLoadingDone()
                 && TabOverlayHandler.instance().isInInstance()
         ) {
@@ -96,13 +97,13 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
                 default -> 0;
             };
 
-            this.renderBox(guiGraphics, x, y);
-            this.renderComponent(guiGraphics, x, y);
+            this.extractRenderBox(guiGraphicsExtractor, x, y);
+            this.extractRenderText(guiGraphicsExtractor, x, y);
         }
-        guiGraphics.pose().popMatrix();
+        guiGraphicsExtractor.pose().popMatrix();
     }
 
-    private void renderComponent(GuiGraphics guiGraphics, int x, int y) {
+    private void extractRenderText(GuiGraphicsExtractor guiGraphicsExtractor, int x, int y) {
         int componentX;
         int componentY;
 
@@ -121,7 +122,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         ItemStack itemStack = getItemStack();
 
         if(!itemStack.isEmpty()) {
-            guiGraphics.renderItem(itemStack, componentX, componentY);
+            guiGraphicsExtractor.item(itemStack, componentX, componentY);
         }
     }
 
@@ -158,7 +159,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         };
     }
 
-    private void renderBox(GuiGraphics guiGraphics, int x, int y) {
+    private void extractRenderBox(GuiGraphicsExtractor guiGraphicsExtractor, int x, int y) {
         int boxX = x;
         int boxY = y;
 
@@ -176,14 +177,14 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         int NIB_HEIGHT = 3;
 
         // Alpha Box
-        if(customHudIcon.isShowBackground()) guiGraphics.fill(
+        if(customHudIcon.isShowBackground()) guiGraphicsExtractor.fill(
                 boxX + BOX_PADDING, boxY + 3,
                 boxX + this.boxWidth - BOX_PADDING, boxY + this.boxHeight - 3,
                 0x7f000000
         );
 
         // Top Left
-        if(customHudIcon.isShowBars()) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHudIcon.isShowBars()) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX, boxY,
                 0, NIB_HEIGHT,
@@ -193,7 +194,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         );
 
         // Top
-        if(customHudIcon.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHudIcon.isShowBars())guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + ATLAS_CORNER, boxY,
                 ATLAS_CORNER, NIB_HEIGHT,
@@ -203,7 +204,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         );
 
         // Top Right
-        if(customHudIcon.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHudIcon.isShowBars())guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + this.boxWidth - ATLAS_CORNER, boxY,
                 ATLAS_CORNER + ATLAS_BAR_WIDTH, NIB_HEIGHT,
@@ -213,7 +214,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         );
 
         // Bottom Left
-        if(customHudIcon.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHudIcon.isShowBars())guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX, boxY + this.boxHeight - ATLAS_CORNER,
                 0, 0,
@@ -223,7 +224,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         );
 
         // Bottom
-        if(customHudIcon.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHudIcon.isShowBars())guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + ATLAS_CORNER, boxY + this.boxHeight - ATLAS_CORNER + NIB_HEIGHT,
                 ATLAS_CORNER, NIB_HEIGHT,
@@ -233,7 +234,7 @@ public class CustomHudIconElement extends Element implements ScreenConstants {
         );
 
         // Bottom Right
-        if(customHudIcon.isShowBars())guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(customHudIcon.isShowBars())guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 BOX_TEXTURE,
                 boxX + this.boxWidth - ATLAS_CORNER, boxY + this.boxHeight - ATLAS_CORNER,
                 ATLAS_CORNER + ATLAS_BAR_WIDTH, 0,

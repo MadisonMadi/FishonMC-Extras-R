@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -67,21 +67,21 @@ class SmallButtonWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        this.renderBox(guiGraphics);
-        this.renderIcon(guiGraphics);
-        this.requestCursor(guiGraphics);
+    protected void extractWidgetRenderState(@NotNull GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float delta) {
+        this.extractRenderBox(guiGraphicsExtractor);
+        this.extractRenderIcon(guiGraphicsExtractor);
+        this.requestCursor(guiGraphicsExtractor);
     }
 
-    private void requestCursor(@NotNull GuiGraphics guiGraphics) {
-        if(this.isHovered()) guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
+    private void requestCursor(@NotNull GuiGraphicsExtractor guiGraphicsExtractor) {
+        if(this.isHovered()) guiGraphicsExtractor.requestCursor(CursorTypes.POINTING_HAND);
     }
 
-    private void renderBox(GuiGraphics guiGraphics) {
-        (isHovered ? box_hover : box).value2().render(guiGraphics);
+    private void extractRenderBox(GuiGraphicsExtractor guiGraphicsExtractor) {
+        (isHovered ? box_hover : box).value2().extractRenderState(guiGraphicsExtractor);
     }
 
-    private void renderIcon(GuiGraphics guiGraphics) {
+    private void extractRenderIcon(GuiGraphicsExtractor guiGraphicsExtractor) {
         Matcher m = PATTERN.matcher(icon.getString());
 
         if (m.matches()) {
@@ -89,28 +89,28 @@ class SmallButtonWidget extends AbstractWidget {
                 if(minecraft.player != null) {
                     ItemStack itemStack = ItemStackHelper.valueOf(icon.getString());
 
-                    guiGraphics.pose().pushMatrix();
-                    guiGraphics.pose().translate(getX() + ((float) width / 2) - 6, getY() + ((float) height / 2) - 6);
-                    guiGraphics.pose().scale(12f / 16f, 12f / 16f);
+                    guiGraphicsExtractor.pose().pushMatrix();
+                    guiGraphicsExtractor.pose().translate(getX() + ((float) width / 2) - 6, getY() + ((float) height / 2) - 6);
+                    guiGraphicsExtractor.pose().scale(12f / 16f, 12f / 16f);
 
-                    guiGraphics.renderItem(itemStack, 0, 0);
+                    guiGraphicsExtractor.item(itemStack, 0, 0);
 
-                    guiGraphics.pose().popMatrix();
+                    guiGraphicsExtractor.pose().popMatrix();
                 }
             } else {
                 int stringWidth = smallCaps ? minecraft.font.width(TextHelper.smallCaps(icon)) : minecraft.font.width(icon);
-                guiGraphics.pose().pushMatrix();
-                guiGraphics.pose().translate(0.0f, 0.0f);
+                guiGraphicsExtractor.pose().pushMatrix();
+                guiGraphicsExtractor.pose().translate(0.0f, 0.0f);
 
                 if(smallCaps) {
-                    GuiGraphicsHelper.drawString(guiGraphics,
+                    GuiGraphicsHelper.text(guiGraphicsExtractor,
                             minecraft.font,
                             icon,
                             getX() + (width / 2) - stringWidth / 2, getY() + (height / 2) - minecraft.font.lineHeight / 2,
                             StringStyle.SHADOW, StringStyle.MIDDLE, StringStyle.SMALL_CAPS
                     );
                 } else {
-                    GuiGraphicsHelper.drawString(guiGraphics,
+                    GuiGraphicsHelper.text(guiGraphicsExtractor,
                             minecraft.font,
                             icon,
                             getX() + (width / 2) - stringWidth / 2, getY() + (height / 2) - minecraft.font.lineHeight / 2,
@@ -118,7 +118,7 @@ class SmallButtonWidget extends AbstractWidget {
                     );
                 }
 
-                guiGraphics.pose().popMatrix();
+                guiGraphicsExtractor.pose().popMatrix();
             }
         }
     }

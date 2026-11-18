@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dannypx.foe.screens.widget.SmallButtonBuilder;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -32,10 +32,10 @@ public class DefaultModScreen extends Screen implements ScreenConstants {
     @Override
     protected void init() {
         super.init();
-        this.renderDefaultWidgets();
+        this.extractRenderDefaultWidgets();
     }
 
-    private void renderDefaultWidgets() {
+    private void extractRenderDefaultWidgets() {
         List<AbstractWidget> widgets = new ArrayList<>();
 
         widgets.add(this.backButton());
@@ -54,7 +54,7 @@ public class DefaultModScreen extends Screen implements ScreenConstants {
                 .icon("Return")
                 .color(0xFFCC0000)
                 .build()
-        : new SmallButtonBuilder(
+                : new SmallButtonBuilder(
                 width / 2 - 50 / 2,
                 height / 2 - BUTTON_HEIGHT / 2,
                 50, BUTTON_HEIGHT,
@@ -76,8 +76,8 @@ public class DefaultModScreen extends Screen implements ScreenConstants {
     }
 
     @Override
-    public void render(@NonNull GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        super.render(guiGraphics, mouseX, mouseY, delta);
+    public void extractRenderState(@NonNull GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, delta);
     }
 
     @Override

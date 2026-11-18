@@ -11,11 +11,7 @@ import dannypx.foe.handler.store.*;
 import dannypx.foe.handler.io.DataFileHandler;
 import dannypx.foe.config.Configs;
 import dannypx.foe.handler.logic.PlaceholderHandler;
-import dannypx.foe.nearby_dispatcher.types.ModUserType;
-import dannypx.foe.nearby_dispatcher.types.NearbyBigType;
 import dannypx.foe.nearby_dispatcher.NearbyDispatcher;
-import dannypx.foe.nearby_dispatcher.types.HatType;
-import dannypx.foe.nearby_dispatcher.types.RodType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -24,8 +20,8 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
@@ -60,12 +56,12 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
         ClientEntityEvents.ENTITY_UNLOAD.register(this::onEntityUnload);
         ScreenEvents.AFTER_INIT.register(this::onAfterInitScreen);
         ItemTooltipCallback.EVENT.register(this::onItemTooltip);
-        LivingEntityFeatureRendererRegistrationCallback.EVENT.register(this::onLivingEntityFeatureRenderingRegistrationCallback);
+        LivingEntityRenderLayerRegistrationCallback.EVENT.register(this::onLivingEntityRenderLayerRegistrationCallback);
 
         this.initHudRenderer();
     }
 
-    private void onLivingEntityFeatureRenderingRegistrationCallback(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?,?,?> livingEntityRenderer, LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper registrationHelper, EntityRendererProvider.Context context) {
+    private void onLivingEntityRenderLayerRegistrationCallback(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?,?,?> livingEntityRenderer, LivingEntityRenderLayerRegistrationCallback.RegistrationHelper registrationHelper, EntityRendererProvider.Context context) {
         if (entityType == EntityType.PLAYER && livingEntityRenderer instanceof AvatarRenderer<?> avatarRenderer) {
             registrationHelper.register(RodCubeLayer.create(avatarRenderer));
         }
@@ -79,7 +75,7 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
         if(minecraftClient.options.guiScale().get() == 0) {
             minecraftClient.options.guiScale().set(3);
             minecraftClient.options.save();
-            minecraftClient.resizeDisplay();
+            minecraftClient.resizeGui();
         }
     }
 
@@ -198,6 +194,6 @@ public class FishOnMCExtrasClient implements ClientModInitializer {
     }
 
     private void registerEntityModels() {
-        EntityModelLayerRegistry.registerModelLayer(FishingHookEntityModel.MODEL_LAYER, FishingHookEntityModel::generateModel);
+        ModelLayerRegistry.registerModelLayer(FishingHookEntityModel.MODEL_LAYER, FishingHookEntityModel::generateModel);
     }
 }

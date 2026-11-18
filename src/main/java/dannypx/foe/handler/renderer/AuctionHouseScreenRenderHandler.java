@@ -7,14 +7,14 @@ import dannypx.foe.search.editbox.SearchBarEditBox;
 import dannypx.foe.type.tuple.Pair;
 import dannypx.foe.config.Configs;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ public class AuctionHouseScreenRenderHandler extends ScreenHandler {
 
             widgets.add(searchBarWidget);
 
-            widgets.forEach(Screens.getButtons(screen)::add);
+            widgets.forEach(Screens.getWidgets(screen)::add);
         }
     }
 
@@ -73,11 +73,11 @@ public class AuctionHouseScreenRenderHandler extends ScreenHandler {
                     && containerScreen.getMenu().getSlot(moveSlot).getItem().getItem() == Items.GUNPOWDER
                     && minecraft.gameMode != null
             ) {
-                minecraft.gameMode.handleInventoryMouseClick(
+                minecraft.gameMode.handleContainerInput(
                         syncId,
                         moveSlot,
                         0,
-                        ClickType.PICKUP,
+                        ContainerInput.PICKUP,
                         minecraft.player
                 );
             }
@@ -96,17 +96,17 @@ public class AuctionHouseScreenRenderHandler extends ScreenHandler {
 
     public void onClose(Screen screen) {
         screen.setFocused(null);
-        Screens.getButtons(screen).remove(searchBarWidget);
+        Screens.getWidgets(screen).remove(searchBarWidget);
         SearchHandler.instance().setFocused(false);
         SearchHandler.instance().setOnScreen(false);
         searchBarWidget = null;
     }
 
     @Override
-    public void render(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float tickDelta) {
-        super.render(screen, guiGraphics, mouseX, mouseY, tickDelta);
+    public void extractRenderState(Screen screen, GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float tickDelta) {
+        super.extractRenderState(screen, guiGraphicsExtractor, mouseX, mouseY, tickDelta);
 
-        if(searchBarWidget != null) searchBarWidget.renderHelp(guiGraphics, mouseX, mouseY, tickDelta);
+        if(searchBarWidget != null) searchBarWidget.extractRenderHelp(guiGraphicsExtractor, mouseX, mouseY, tickDelta);
     }
 
     //endregion

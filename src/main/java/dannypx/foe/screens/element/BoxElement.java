@@ -1,7 +1,7 @@
 package dannypx.foe.screens.element;
 
 import dannypx.foe.FishOnMCExtras;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -84,15 +84,15 @@ public class BoxElement extends Element {
 
     //region Methods
     @Override
-    public void render(GuiGraphics guiGraphics) {
-        this.renderBox(guiGraphics);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor) {
+        this.extractRenderBox(guiGraphicsExtractor);
     }
 
-    private void renderBox(GuiGraphics guiGraphics) {
+    private void extractRenderBox(GuiGraphicsExtractor guiGraphicsExtractor) {
         Identifier TEXTURE = isAlt ? (isSolid ? BOX_SOLID_ALT_TEXTURE : BOX_ALT_TEXTURE) : (isSolid ? BOX_SOLID_TEXTURE : BOX_TEXTURE);
 
         // Top Left
-        if(showTop && showLeft) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showTop && showLeft) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 this.x, this.y,
                 0, 0,
@@ -102,7 +102,7 @@ public class BoxElement extends Element {
         );
 
         // Top
-        if(showTop) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showTop) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 this.x + 5, this.y,
                 5, 0,
@@ -112,7 +112,7 @@ public class BoxElement extends Element {
         );
 
         // Top Right
-        if(showTop && showRight) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showTop && showRight) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 x + this.width - 5, this.y,
                 10, 0,
@@ -122,7 +122,7 @@ public class BoxElement extends Element {
         );
 
         // Centre Left
-        if(showLeft) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showLeft) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 this.x, this.y + 5,
                 0, 5,
@@ -132,7 +132,7 @@ public class BoxElement extends Element {
         );
 
         // Centre
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 this.x + 5, this.y + 5,
                 5, 5,
@@ -142,7 +142,7 @@ public class BoxElement extends Element {
         );
 
         // Centre Right
-        if(showRight) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showRight) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 x + this.width - 5, this.y + 5,
                 10, 5,
@@ -152,7 +152,7 @@ public class BoxElement extends Element {
         );
 
         // Bottom Left
-        if(showLeft && showBottom) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showLeft && showBottom) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 this.x, y + this.height - 5,
                 0, 10,
@@ -162,7 +162,7 @@ public class BoxElement extends Element {
         );
 
         // Bottom
-        if(showBottom) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showBottom) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 this.x + 5, y + this.height - 5,
                 5, 10,
@@ -172,7 +172,7 @@ public class BoxElement extends Element {
         );
 
         // Bottom Right
-        if(showBottom && showRight) guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
+        if(showBottom && showRight) guiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED,
                 TEXTURE,
                 x + this.width - 5, y + this.height - 5,
                 10, 10,

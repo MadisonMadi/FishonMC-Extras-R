@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class NotifierElement extends Element implements ScreenConstants {
     //region Fields
@@ -43,12 +43,12 @@ public class NotifierElement extends Element implements ScreenConstants {
 
     //region Methods
     @Override
-    public void render(GuiGraphics guiGraphics) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor) {
         int scaledWidth = (int) (Minecraft.getInstance().getWindow().getGuiScaledWidth() * (1 / Configs.hudConfig.notifierElementScale.get()));
         int scaledHeight = (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * (1 / Configs.hudConfig.notifierElementScale.get()));
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(Configs.hudConfig.notifierElementScale.get(), Configs.hudConfig.notifierElementScale.get());
+        guiGraphicsExtractor.pose().pushMatrix();
+        guiGraphicsExtractor.pose().scale(Configs.hudConfig.notifierElementScale.get(), Configs.hudConfig.notifierElementScale.get());
         if(LoadingHandler.instance().isLoadingDone()
                 && Configs.hudConfig.showNotifierElement.get()
         ) {
@@ -84,17 +84,17 @@ public class NotifierElement extends Element implements ScreenConstants {
                 default -> y;
             };
 
-            this.renderNotifications(guiGraphics, x, y);
+            this.extractRenderNotifications(guiGraphicsExtractor, x, y);
         }
-        guiGraphics.pose().popMatrix();
+        guiGraphicsExtractor.pose().popMatrix();
     }
 
-    private void renderNotifications(GuiGraphics guiGraphics, int x, int y) {
+    private void extractRenderNotifications(GuiGraphicsExtractor guiGraphicsExtractor, int x, int y) {
         AtomicInteger yTranslation = new AtomicInteger(y);
         for (NotificationElement notificationElement : notificationElements) {
             notificationElement.setX(x);
             notificationElement.setY(yTranslation.get());
-            notificationElement.render(guiGraphics);
+            notificationElement.extractRenderState(guiGraphicsExtractor);
 
             yTranslation.addAndGet(notificationElement.height + PADDING_QUART);
         }
