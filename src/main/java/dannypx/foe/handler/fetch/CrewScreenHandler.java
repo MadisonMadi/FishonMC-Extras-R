@@ -1,5 +1,8 @@
 package dannypx.foe.handler.fetch;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.authlib.properties.Property;
 import dannypx.foe.handler.Handler;
 import dannypx.foe.handler.logic.CrewHandler;
 import dannypx.foe.handler.logic.NotifierHandler;
@@ -13,6 +16,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public class CrewScreenHandler extends Handler {
     private static CrewScreenHandler INSTANCE = new CrewScreenHandler();
@@ -34,9 +38,15 @@ public class CrewScreenHandler extends Handler {
                 && crewInfoStack.get(DataComponents.LORE) != null
         ) {
             List<Component> componentList = crewInfoStack.get(DataComponents.LORE).lines();
-            if(componentList.size() > 3
-                    && componentList.get(2).getSiblings().size() > 4
-                    && Objects.equals(componentList.get(2).getSiblings().get(3).getString(), ScoreboardHandler.instance().getCrew().getString())
+            if(Objects.equals(
+                    componentList.get(2)
+                            .getSiblings().getFirst()
+                            .getSiblings().getFirst()
+                            .getSiblings().getFirst()
+                            .plainCopy()
+                            .getString(),
+                    ScoreboardHandler.instance().getCrew().getString()
+            )
             ) {
                 Map<UUID, Pair<String, ItemStack>> crewMembers = new HashMap<>();
 
@@ -44,9 +54,26 @@ public class CrewScreenHandler extends Handler {
                     ItemStack itemStack = chestMenu.getSlot(i).getItem();
                     if(itemStack.getItem() == Items.PLAYER_HEAD
                             && itemStack.get(DataComponents.PROFILE) != null
-                            && itemStack.get(DataComponents.PROFILE).partialProfile().id() != null
                     ) {
-                        crewMembers.put(itemStack.get(DataComponents.PROFILE).partialProfile().id(), Pair.of(itemStack.get(DataComponents.PROFILE).partialProfile().name(), itemStack));
+                        ResolvableProfile profile = itemStack.get(DataComponents.PROFILE);
+                        UUID id = profile.partialProfile().properties().get("textures").stream()
+                                .map(Property::value)
+                                .map(this::parseProfileId)
+                                .filter(Objects::nonNull)
+                                .findFirst()
+                                .orElse(null);
+
+                        if(id != null
+                                && itemStack.getCustomName() != null
+                        ) {
+                            crewMembers.put(id, Pair.of(
+                                    itemStack.getCustomName()
+                                            .getSiblings().getFirst()
+                                            .plainCopy()
+                                            .getString().trim(),
+                                    itemStack
+                            ));
+                        }
                     }
                 }
 
@@ -58,9 +85,29 @@ public class CrewScreenHandler extends Handler {
                         NotifierHandler.instance().notifyImportCrewCompleted();
                     }
 
+                    if(NotifierHandler.instance().getPersistentNotifications().containsKey(NotifierHandler.CREW_UPDATE_CHANGE_KEY)) {
+                        NotifierHandler.instance().removeNotification(NotifierHandler.CREW_UPDATE_CHANGE_KEY);
+                        NotifierHandler.instance().notifyImportCrewCompleted();
+                    }
+
                     ProfileDataHandler.instance().updateImportCrew(true);
                 }
             }
+        }
+    }
+
+    private UUID parseProfileId(String base64) {
+        try {
+            String json = new String(Base64.getDecoder().decode(base64));
+            JsonElement id = JsonParser.parseString(json).getAsJsonObject().get("profileId");
+            if(id == null) return null;
+
+            String hex = id.getAsString().replace("-", "");
+            return new UUID(
+                    Long.parseUnsignedLong(hex.substring(0, 16), 16),
+                    Long.parseUnsignedLong(hex.substring(16), 16));
+        } catch (Exception e) {
+            return null;
         }
     }
     //endregion

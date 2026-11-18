@@ -6,35 +6,37 @@ import java.util.stream.Collectors;
 
 import dannypx.foe.type.StringStyle;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.state.GuiTextRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.CommonColors;
 import org.joml.Matrix3x2f;
 
 public class GuiGraphicsHelper {
-    public static void text(GuiGraphicsExtractor guiGraphicsExtractor, Font font, Component component, int x, int y, StringStyle... stringStyles) {
+    public static void drawString(GuiGraphics guiGraphics, Font font, Component component, int x, int y, StringStyle... stringStyles) {
         EnumSet<StringStyle> styles = stringStyles.length == 0
                 ? EnumSet.noneOf(StringStyle.class)
                 : EnumSet.copyOf(Arrays.asList(stringStyles));
-        text(guiGraphicsExtractor, font, component, x, y, styles);
+        drawString(guiGraphics, font, component, x, y, Style.EMPTY, styles);
     }
 
-    private static int text(GuiGraphicsExtractor guiGraphicsExtractor, Font font, Component component, int x, int y, EnumSet<StringStyle> styles) {
-        List<Component> siblings = component.getSiblings();
+    private static int drawString(GuiGraphics guiGraphics, Font font, Component component, int x, int y, Style parentStyle, EnumSet<StringStyle> styles) {
+        Style style = component.getStyle().applyTo(parentStyle);
 
-        if (siblings.isEmpty()) {
-            return drawGlyphs(guiGraphicsExtractor, font, component.getString(), x, y, component.getStyle(), styles);
+        String own = component.plainCopy().getString();
+        if (!own.isEmpty()) {
+            x = drawGlyphs(guiGraphics, font, own, x, y, style, styles);
         }
 
-        for (Component sibling : siblings) {
-            x = text(guiGraphicsExtractor, font, sibling, x, y, styles);
+        for (Component sibling : component.getSiblings()) {
+            x = drawString(guiGraphics, font, sibling, x, y, style, styles);
         }
+
         return x;
     }
 
-    private static int drawGlyphs(GuiGraphicsExtractor guiGraphicsExtractor, Font font, String text, int x, int y, Style style, EnumSet<StringStyle> styles) {
+    private static int drawGlyphs(GuiGraphics guiGraphics, Font font, String text, int x, int y, Style style, EnumSet<StringStyle> styles) {
         boolean shadow = styles.contains(StringStyle.SHADOW);
         boolean middle = styles.contains(StringStyle.MIDDLE);
         boolean hasCustomFont = styles.contains(StringStyle.HAS_CUSTOM_FONT);
@@ -53,13 +55,13 @@ public class GuiGraphicsHelper {
             int cWidth = font.width(Component.literal(glyph).setStyle(style));
             int yAdjust = computeYAdjustment(glyph, middle, hasCustomFont, smallCaps);
 
-            guiGraphicsExtractor.guiRenderState.addText(
+            guiGraphics.guiRenderState.submitText(
                     new GuiTextRenderState(
                             font,
                             Component.literal(glyph).setStyle(style).getVisualOrderText(),
-                            new Matrix3x2f(guiGraphicsExtractor.pose()),
+                            new Matrix3x2f(guiGraphics.pose()),
                             x, y - yAdjust, CommonColors.WHITE,
-                            0, shadow, false, guiGraphicsExtractor.scissorStack.peek()
+                            0, shadow, false, guiGraphics.scissorStack.peek()
                     )
             );
 
@@ -125,7 +127,7 @@ public class GuiGraphicsHelper {
         return it.next();
     }
 
-    public static void drawHorizontalGradient(GuiGraphicsExtractor guiGraphicsExtractor, int x1, int y1, int x2, int y2, int leftColor, int rightColor) {
+    public static void drawHorizontalGradient(GuiGraphics guiGraphics, int x1, int y1, int x2, int y2, int leftColor, int rightColor) {
         int width = x2 - x1;
         for (int i = 0; i < width; i++) {
             float t = i / (float) (width - 1);
@@ -135,11 +137,11 @@ public class GuiGraphicsHelper {
             int a = (int) ( ((leftColor >> 24 & 0xFF) * (1 - t)) + ((rightColor >> 24 & 0xFF) * t) );
 
             int color = (a << 24) | (r << 16) | (g << 8) | b;
-            guiGraphicsExtractor.fill(x1 + i, y1, x1 + i + 1, y2, color);
+            guiGraphics.fill(x1 + i, y1, x1 + i + 1, y2, color);
         }
     }
 
-    public static void drawLine(GuiGraphicsExtractor guiGraphicsExtractor,
+    public static void drawLine(GuiGraphics guiGraphics,
                                 int x1, int y1,
                                 int x2, int y2,
                                 int color) {
@@ -151,7 +153,7 @@ public class GuiGraphicsHelper {
         int err = dx + dy;
 
         while (true) {
-            guiGraphicsExtractor.fill(x1, y1, x1 + 1, y1 + 1, color);
+            guiGraphics.fill(x1, y1, x1 + 1, y1 + 1, color);
 
             if (x1 == x2 && y1 == y2) break;
             int e2 = 2 * err;
@@ -160,3 +162,4 @@ public class GuiGraphicsHelper {
         }
     }
 }
+
